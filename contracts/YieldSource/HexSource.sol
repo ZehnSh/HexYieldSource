@@ -30,12 +30,17 @@ contract HexSource is IYieldSource {
 
 
     function redeemToken(uint256 amount) external returns (uint256){
+        token.transfer(msg.sender, amount);
 
     }
 
     function supplyToYield(uint numberOfDays) external {
         IHEX(address(token)).stakeStart(token.balanceOf(address(this)),numberOfDays);
 
+    }
+
+    function withdrawFromYield(uint stakeIndex,uint40 stakeIdParam) external {
+        Hex.stakeEnd(stakeIndex, stakeIdParam);
     }
 
 }

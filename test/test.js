@@ -11,6 +11,7 @@ describe("hex Source test",async function(){
   let ticketContract;
   let hexYield;
   let impersonatedSigner;
+  let sevenDays = 7 * 24 * 60 * 60;
 
   describe("",async function () {
 
@@ -24,19 +25,16 @@ describe("hex Source test",async function(){
       const Hex = await ethers.getContractFactory("HEX");
       const hex = await Hex.deploy();
       HEX = await hex.deployed();
-      console.log(HEX.address)
+
 
       const HexSource = await ethers.getContractFactory("HexSource");
       const hexsource = await HexSource.deploy(HEX.address);
       hexYield = await hexsource.deployed();
 
-      console.log(hexYield.address)
-
       const YieldSourcePrizePool = await ethers.getContractFactory("PrizePool");
       const yieldsourceprizepool = await YieldSourcePrizePool.deploy(hexYield.address);
       PrizePool = await yieldsourceprizepool.deployed();
 
-      console.log(PrizePool.address)
 
       const Tickets = await ethers.getContractFactory("Ticket");
       const ticket = await Tickets.deploy(PrizePool.address);
@@ -128,7 +126,7 @@ describe("hex Source test",async function(){
       await PrizePool.connect(addr1).depositTo(1000)
       await PrizePool.connect(addr2).depositTo(1000)
 
-      await hexYield.supplyToYield(10)
+      await hexYield.supplyToYield(100)
 
       await PrizePool.depositTo(1000)
       await PrizePool.depositTo(1000)
@@ -141,6 +139,59 @@ describe("hex Source test",async function(){
       const stakedList = await HEX.stakeLists(hexYield.address,1);
       console.log(stakedList)
       expect(stakedList[1]).to.equal(4000)
+  
+    })
+
+    it("The timestamp should increase",async ()=>{
+      const blockNumBefore = await ethers.provider.getBlockNumber();
+      const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+      const timestampBefore = blockBefore.timestamp;
+
+      await ethers.provider.send('evm_increaseTime', [sevenDays]);
+      await ethers.provider.send('evm_mine');
+
+      const blockNumAfter = await ethers.provider.getBlockNumber();
+      const blockAfter = await ethers.provider.getBlock(blockNumAfter);
+      const timestampAfter = blockAfter.timestamp;
+
+      expect(blockNumAfter).to.be.equal(blockNumBefore + 1);
+      expect(timestampAfter).to.be.equal(timestampBefore + sevenDays);
+  
+    })
+
+
+    it("The timestamp should increase",async ()=>{
+      await PrizePool.depositTo(1000)
+      
+      await PrizePool.connect(addr1).depositTo(1000)
+      await PrizePool.connect(addr2).depositTo(1000)
+
+      await hexYield.supplyToYield(100)
+
+      await PrizePool.depositTo(1000)
+      await PrizePool.depositTo(1000)
+      
+      await PrizePool.connect(addr1).depositTo(1000)
+      await PrizePool.connect(addr2).depositTo(1000)
+
+      console.log(await HEX.balanceOf(hexYield.address))
+
+      await hexYield.supplyToYield(10)
+
+      await ethers.provider.send('evm_increaseTime', [sevenDays*10]);
+      await ethers.provider.send('evm_mine');
+
+      console.log(await HEX.balanceOf(hexYield.address));
+
+      console.log(await HEX.stakeLists(hexYield.address,0))
+      console.log(await HEX.globalInfo())
+
+      await hexYield.withdrawFromYield(0,1);
+
+      console.log(await HEX.balanceOf(hexYield.address));
+      console.log(await HEX.totalSupply());
+
+  
   
     })
   })

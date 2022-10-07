@@ -84,26 +84,26 @@ contract PrizePool {
 
 
 
-    // function withdrawFrom(address _from, uint256 _amount)
-    //     external
-    //     returns (uint256)
-    // {   
-    //     ITicket _ticket = ticket;
-    //     uint totalTokenAmount = balanceOfYieldSource();
-    //     uint totalTicketAmount = _ticket.totalSupply();
+    function withdrawFrom(address _from, uint256 _amount)
+        external
+        returns (uint256)
+    {   
+        ITicket _ticket = ticket;
+        uint totalTokenAmount = balanceOfYieldSource();
+        uint _totalTicketAmount = totalTicketAmount();
         
-    //     uint tokenAmount = (totalTokenAmount * _amount / totalTicketAmount);
+        uint tokenAmount = (totalTokenAmount * _amount / _totalTicketAmount);
 
-    //     // burn the tickets
-    //     _ticket.controllerBurnFrom(msg.sender, _from, _amount);
+        // burn the tickets
+        _ticket.controllerBurn(msg.sender, _amount);
 
-    //     // redeem the tickets
-    //     uint256 _redeemed = _redeem(tokenAmount);
+        // redeem the tickets
+        uint256 _redeemed = _redeem(tokenAmount);
 
-    //     _token().transfer(_from, _redeemed);
+        _token().transfer(_from, _redeemed);
 
-    //     return _redeemed;
-    // }
+        return _redeemed;
+    }
 
       function _supply(uint256 _mintAmount) internal {
         _token().approve(address(yieldSource), _mintAmount);
@@ -113,6 +113,7 @@ contract PrizePool {
 
     function _redeem(uint256 _redeemAmount) internal returns (uint256) {
         return yieldSource.redeemToken(_redeemAmount);
+        
     }
 
 }
