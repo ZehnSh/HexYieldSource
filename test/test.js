@@ -194,6 +194,27 @@ describe("hex Source test",async function(){
   
   
     })
+
+    it("prizepool ",async ()=>{
+      await PrizePool.depositTo(2000)
+      
+      await PrizePool.connect(addr1).depositTo(1000)
+      await PrizePool.connect(addr2).depositTo(1000)
+      console.log(await PrizePool.shares(addr1.address),await PrizePool.shares(addr2.address))
+
+      await hexYield.supplyToYield(140)
+
+      await ethers.provider.send('evm_increaseTime', [sevenDays*18]);
+      await ethers.provider.send('evm_mine');
+
+      expect(await PrizePool.withdrawFrom(3000)).not.to.be.reverted;
+
+
+
+      
+
+  
+    })
   })
 
     

@@ -1365,7 +1365,7 @@ contract StakeableToken is GlobalsAndUtility {
 
         /* Get stake copy */
         StakeCache memory st;
-        _stakeLoad(stRef, stakeIdParam, st);
+         (stRef, stakeIdParam, st);
 
         /* Stake must have served full term */
         require(g._currentDay >= st._lockedDay + st._stakedDays, "HEX: Stake not fully served");

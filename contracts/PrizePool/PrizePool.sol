@@ -10,6 +10,8 @@ contract PrizePool {
     address public owner;
     IYieldSource public yieldSource;
 
+    mapping(address=>uint) public shares;
+
     modifier onlyOwner() {
         require(owner==msg.sender);
         _;
@@ -59,15 +61,15 @@ contract PrizePool {
         if(totalTokenAmount>0)
         {   
         _totalTicketAmount = totalTicketAmount();
-         totalTicketAmount;
         tickets = (_totalTicketAmount  * _amount/totalTokenAmount);
+        shares[msg.sender] += tickets;
 
         _token().transferFrom(msg.sender, address(this), _amount);
 
         _mint(msg.sender, tickets, _ticket);
         _supply(_amount);
 
-        totalTokenAmount+= _amount;
+       
 
          
         }
@@ -77,17 +79,19 @@ contract PrizePool {
         _mint(msg.sender, _amount, _ticket);
         _supply(_amount);
 
-        totalTokenAmount+= _amount;
+        shares[msg.sender] += _amount;
+
+        
         }
     }
 
 
 
 
-    function withdrawFrom(address _from, uint256 _amount)
+    function withdrawFrom(uint256 _amount)
         external
         returns (uint256)
-    {   
+    {   require(_amount<=shares[msg.sender] && _amount !=0,"Not enough shares");
         ITicket _ticket = ticket;
         uint totalTokenAmount = balanceOfYieldSource();
         uint _totalTicketAmount = totalTicketAmount();
@@ -98,11 +102,13 @@ contract PrizePool {
         _ticket.controllerBurn(msg.sender, _amount);
 
         // redeem the tickets
-        uint256 _redeemed = _redeem(tokenAmount);
+        _redeem(tokenAmount);
 
-        _token().transfer(_from, _redeemed);
+        _token().transfer(msg.sender, tokenAmount);
 
-        return _redeemed;
+        shares[msg.sender]-=_amount;
+
+        
     }
 
       function _supply(uint256 _mintAmount) internal {
